@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免责申明</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .disclaimer {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: 300px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        .agree-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .agree-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .disagree-btn {
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>CELI-GALAS登录免责申明</h2>
+    <div class="disclaimer">
+        <h3>免责申明条款</h3>
+
+        <p>A.本网站所载文字、图片、数据、资料等内容仅为信息参考，不构成投资建议、交易依据、法律意见、医疗建议或专业服务承诺。</p>
+        <p>B.本网站不保证内容的准确性、完整性、及时性、适用性，对信息错误、遗漏、过时不承担责任。。</p>
+        <p>C. 您使用本网站的全部风险由您自行承担。</p>
+        <p>D. 因使用本网站导致的任何直接 / 间接损失（包括数据丢失、利润损失、业务中断等），本网站均不承担法律责任。</p>
+        <p>E.本网站可能包含第三方网站链接，第三方网站内容不受本网站控制。</p>
+        <p>F.本网站不对第三方内容、隐私政策、服务行为负责，亦不承担任何连带责任。</p>
+        <p>G.因网络故障、黑客攻击、病毒、服务器故障、政府管制、自然灾害等不可抗力导致的服务中断、数据丢失，本网站不承担责任。</p>
+        <p>H.用户在本网站发布、上传、传播的内容，由用户自行承担全部法律责任。</p>
+        <p>I.如侵犯第三方权益，由用户独立处理并赔偿损失，与本网站无关。</p>
+        <p>J.本网站所有内容（文字、图片、logo、设计等）受著作权法保护。</p>
+        <p>K.未经书面许可，不得复制、转载、改编、商用，违者将依法追责。</p>
+        <p>L.本网站有权随时更新本免责声明，更新后生效，不再另行通知。</p>
+        <p>M/继续使用本网站即视为接受修改后的条款。</p>
+
+
+    </div>
+
+    <div>
+        <input type="checkbox" id="agreeCheck">
+        <label for="agreeCheck">我已仔细阅读并同意以上免责申明</label>
+    </div>
+
+    <div class="btn-group">
+        <button class="agree-btn" id="agreeBtn" disabled onclick="goToMain()">同意并进入</button>
+        <button class="disagree-btn" onclick="goBackLogin()">不同意</button>
+    </div>
+
+    <script>
+        // 监听复选框状态，控制按钮可用/不可用
+        const agreeCheck = document.getElementById("agreeCheck");
+        const agreeBtn = document.getElementById("agreeBtn");
+
+        agreeCheck.addEventListener("change", function() {
+            agreeBtn.disabled = !this.checked;
+        });
+
+        // 同意后跳转到主页面
+        function goToMain() {
+            window.location.href = "main.html";
+        }
+
+        // 不同意返回登录页面
+        function goBackLogin() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

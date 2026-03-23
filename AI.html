@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek 纯前端接入</title>
+    <style>
+        /* 简单样式优化 */
+        .chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .chat-history {
+            height: 500px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .user-message {
+            text-align: right;
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: #007bff;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+            max-width: 70%;
+        }
+        .ai-message {
+            text-align: left;
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            color: #333;
+            border-radius: 8px;
+            display: inline-block;
+            max-width: 70%;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        #send-btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #send-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-history" id="chat-history"></div>
+        <div class="input-area">
+            <input type="text" id="message-input" placeholder="请输入问题，例如：介绍一下DeepSeek" />
+            <button id="send-btn">发送</button>
+        </div>
+    </div>
+
+    <script>
+        // ************************ 核心配置 ************************
+        // 替换为你的 DeepSeek API Key（纯前端暴露有风险，仅测试用）
+        const DEEPSEEK_API_KEY = "你的DeepSeek API Key";
+        // DeepSeek API 地址（通用对话接口）
+        const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
+        // 模型名称（可根据需求更换，如 deepseek-chat、deepseek-coder 等）
+        const MODEL_NAME = "deepseek-chat";
+
+        // ************************ 页面元素 ************************
+        const chatHistoryEl = document.getElementById("chat-history");
+        const messageInputEl = document.getElementById("message-input");
+        const sendBtnEl = document.getElementById("send-btn");
+
+        // ************************ 核心函数 ************************
+        /**
+         * 发送消息到 DeepSeek API
+         * @param {string} userMessage 用户输入的消息
+         */
+        async function sendMessageToDeepSeek(userMessage) {
+            // 禁用发送按钮，防止重复提交
+            sendBtnEl.disabled = true;
+
+            // 1. 展示用户消息到聊天记录
+            addMessageToHistory("user", userMessage);
+            // 清空输入框
+            messageInputEl.value = "";
+
+            try {
+                // 2. 构造请求参数（符合 OpenAI 兼容格式）
+                const requestBody = {
+                    model: MODEL_NAME,
+                    messages: [
+                        { role: "user", content: userMessage } // 单轮对话，多轮可追加历史
+                    ],
+                    temperature: 0.7, // 随机性，0-1 之间
+                    max_tokens: 2048 // 最大生成token数
+                };
+
+                // 3. 发送 POST 请求到 DeepSeek API
+                const response = await fetch(DEEPSEEK_API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${DEEPSEEK_API_KEY}` // 认证方式
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                // 4. 处理响应
+                if (!response.ok) {
+                    throw new Error(`API 请求失败：${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                // 提取 AI 回复内容
+                const aiReply = result.choices[0]?.message?.content || "未获取到回复";
+                
+                // 5. 展示 AI 回复到聊天记录
+                addMessageToHistory("ai", aiReply);
+
+            } catch (error) {
+                // 异常处理
+                addMessageToHistory("ai", `请求出错：${error.message}`);
+                console.error("DeepSeek API 错误：", error);
+            } finally {
+                // 恢复发送按钮
+                sendBtnEl.disabled = false;
+            }
+        }
+
+        /**
+         * 添加消息到聊天记录
+         * @param {string} role 角色（user/ai）
+         * @param {string} content 消息内容
+         */
+        function addMessageToHistory(role, content) {
+            const messageEl = document.createElement("div");
+            messageEl.className = role === "user" ? "user-message" : "ai-message";
+            // 转义HTML特殊字符，防止XSS
+            messageEl.textContent = content;
+            chatHistoryEl.appendChild(messageEl);
+            // 滚动到最新消息
+            chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+        }
+
+        // ************************ 事件绑定 ************************
+        // 点击发送按钮
+        sendBtnEl.addEventListener("click", () => {
+            const message = messageInputEl.value.trim();
+            if (message) {
+                sendMessageToDeepSeek(message);
+            }
+        });
+
+        // 按回车发送
+        messageInputEl.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && messageInputEl.value.trim()) {
+                sendMessageToDeepSeek(messageInputEl.value.trim());
+            }
+        });
+    </script>
+</body>
+</html>

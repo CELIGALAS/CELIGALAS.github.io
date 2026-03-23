@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人网盘系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 登录页面样式（保持原有样式，仅修改验证逻辑） */
+        .login-wrap {
+            max-width: 400px;
+            margin: 100px auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        }
+
+        .login-wrap h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .form-item {
+            margin-bottom: 25px;
+        }
+
+        .form-item label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-item input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-item input:focus {
+            outline: none;
+            border-color: #409eff;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #409eff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #337ecc;
+        }
+
+        .error-tip {
+            color: #f56c6c;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+            font-size: 14px;
+        }
+
+        /* 网盘主页面样式 */
+        .drive-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+            padding: 20px;
+            display: none;
+        }
+
+        .drive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            font-size: 18px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #f56c6c;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #e45656;
+        }
+
+        /* 文件操作区 */
+        .file-actions {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .upload-btn {
+            position: relative;
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #67c23a;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .upload-btn:hover {
+            background-color: #5cad2e;
+        }
+
+        #fileUpload {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* 文件列表样式 */
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .file-card {
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 20px 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .file-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .file-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            color: #409eff;
+        }
+
+        .file-name {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .download-btn {
+            padding: 4px 10px;
+            background-color: #409eff;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .no-files {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 0;
+            color: #999;
+            font-size: 16px;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .file-list {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div class="login-wrap" id="loginPage">
+        <h2>个人网盘登录</h2>
+        <div class="form-item">
+            <label for="username">用户名</label>
+            <input type="text" id="username" placeholder="请输入用户名">
+        </div>
+        <div class="form-item">
+            <label for="password">密码</label>
+            <input type="password" id="password" placeholder="请输入密码">
+        </div>
+        <button class="login-btn" onclick="handleLogin()">登录</button>
+        <div class="error-tip" id="errorTip">用户名或密码错误</div>
+    </div>
+
+    <!-- 网盘主页面 -->
+    <div class="drive-wrap" id="drivePage">
+        <div class="drive-header">
+            <div class="user-info" id="userName"></div>
+            <button class="logout-btn" onclick="handleLogout()">退出登录</button>
+        </div>
+
+        <div class="file-actions">
+            <label class="upload-btn">
+                上传文件
+                <input type="file" id="fileUpload" onchange="handleFileUpload(this)">
+            </label>
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <script>
+        // ====================== 自定义账户密码配置区 ======================
+        // 【自定义说明】：
+        // 1. 格式：{ username: "账号", password: "密码", files: [] }
+        // 2. 新增账号：复制一行 { username: "", password: "", files: [] }, 并填入内容
+        // 3. 删除账号：直接删除对应的行即可
+        // 4. 修改账号：修改对应行的 username 或 password 值
+        // 5. files数组：可预置文件，格式 { name: "文件名", size: "大小", type: "类型", content: "" }
+        const validUsers = [
+            // 基础测试账号
+            { username: "1", password: "1", files: [
+                { name: "测试文件.txt", size: "1.0KB", type: "txt", content: "" }
+            ] },                                   //test
+            // 自定义账号1
+            { username: "czw", password: "czw023", files: [
+                { name: "czw的文档.docx", size: "2.4MB", type: "doc", content: "" },
+                { name: "czw的照片.jpg", size: "5.8MB", type: "img", content: "" }
+            ] },
+            // 自定义账号2
+            { username: "Celichenli1", password: "Admin162534#", files: [
+                { name: "管理员公告.pdf", size: "3.5MB", type: "pdf", content: "" },
+                { name: "系统日志.txt", size: "1.2KB", type: "txt", content: "" }
+            ] },              //admin
+            // 新增账号3
+            { username: "temp1", password: "temp123456", files: [] },                      //test
+            // 新增账号4
+            { username: "temp2", password: "temp123456", files: [] },                      //tset
+            // 新增账号5
+            { username: "XS123456", password: "xs123456", files: [] },                     //admin
+            // 新增账号6
+            { username: "gita178058", password: "git1780589", files: [] },
+            // 新增账号7
+            { username: "gaohaochen", password: "576918", files: [] },
+            
+            // 【示例】添加自定义账号的格式（删除注释后使用）
+            // { username: "你的自定义账号", password: "你的自定义密码", files: [] }
+        ];
+        // ====================== 自定义账户密码配置区结束 ======================
+
+        // 初始化用户数据（将配置的用户写入localStorage）
+        function initUserData() {
+            if (!localStorage.getItem('netDiskUsers')) {
+                localStorage.setItem('netDiskUsers', JSON.stringify(validUsers));
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            initUserData();
+            // 检查是否有未退出的登录状态
+            const currentUser = localStorage.getItem('currentLoginUser');
+            if (currentUser) {
+                showDrivePage(JSON.parse(currentUser));
+            }
+        };
+
+        // 登录处理（和参考页面一致的验证逻辑）
+        function handleLogin() {
+            // 获取输入的账户和密码（去除首尾空格）
+            const inputUsername = document.getElementById("username").value.trim();
+            const inputPassword = document.getElementById("password").value.trim();
+            const errorTip = document.getElementById("errorTip");
+
+            // 清空错误提示
+            errorTip.style.display = "none";
+
+            // 验证账户密码是否匹配（和参考页面一致的some方法）
+            const loginUser = validUsers.find(user => 
+                user.username === inputUsername && user.password === inputPassword
+            );
+
+            // 根据验证结果处理
+            if (loginUser) {
+                // 保存当前登录用户
+                localStorage.setItem('currentLoginUser', JSON.stringify(loginUser));
+                // 显示网盘页面
+                showDrivePage(loginUser);
+            } else {
+                errorTip.style.display = "block";
+            }
+        }
+
+        // 显示网盘页面
+        function showDrivePage(user) {
+            document.getElementById('loginPage').style.display = "none";
+            document.getElementById('drivePage').style.display = "block";
+            document.getElementById('userName').textContent = `当前用户：${user.username}`;
+            // 渲染文件列表
+            renderFileList(user.files, user.username);
+        }
+
+        // 渲染文件列表
+        function renderFileList(files, username) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = "";
+
+            if (files.length === 0) {
+                fileList.innerHTML = '<div class="no-files">暂无文件，点击上传按钮添加文件吧～</div>';
+                return;
+            }
+
+            // 为不同文件类型设置图标
+            const fileIconMap = {
+                doc: "📄",
+                img: "🖼️",
+                pdf: "📑",
+                txt: "📝",
+                video: "🎬",
+                audio: "🎵",
+                other: "📁"
+            };
+
+            files.forEach((file, index) => {
+                const fileType = file.type || "other";
+                const fileCard = document.createElement('div');
+                fileCard.className = "file-card";
+                fileCard.innerHTML = `
+                    <div class="file-icon">${fileIconMap[fileType] || fileIconMap.other}</div>
+                    <div class="file-name" title="${file.name}">${file.name}</div>
+                    <div class="file-size">${file.size}</div>
+                    <button class="download-btn" onclick="downloadFile('${username}', ${index})">下载</button>
+                `;
+                fileList.appendChild(fileCard);
+            });
+        }
+
+        // 文件上传处理
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // 获取当前登录用户
+            const currentUser = JSON.parse(localStorage.getItem('currentLoginUser'));
+            const users = JSON.parse(localStorage.getItem('netDiskUsers'));
+
+            // 处理文件大小显示
+            const fileSize = formatFileSize(file.size);
+            // 获取文件类型
+            const fileType = getFileType(file.name);
+
+            // 读取文件内容（用于下载）
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // 构造新文件对象
+                const newFile = {
+                    name: file.name,
+                    size: fileSize,
+                    type: fileType,
+                    content: e.target.result // 文件base64内容
+                };
+
+                // 更新当前用户的文件列表
+                currentUser.files.push(newFile);
+                
+                // 更新localStorage中的用户数据
+                const userIndex = users.findIndex(u => u.username === currentUser.username);
+                users[userIndex] = currentUser;
+                localStorage.setItem('netDiskUsers', JSON.stringify(users));
+                localStorage.setItem('currentLoginUser', JSON.stringify(currentUser));
+
+                // 重新渲染文件列表
+                renderFileList(currentUser.files, currentUser.username);
+                // 清空上传输入框
+                input.value = "";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 文件下载处理
+        function downloadFile(username, fileIndex) {
+            // 获取用户列表
+            const users = JSON.parse(localStorage.getItem('netDiskUsers'));
+            const user = users.find(u => u.username === username);
+            const file = user.files[fileIndex];
+
+            // 如果是默认文件（无content），模拟下载提示
+            if (!file.content) {
+                alert(`开始下载：${file.name}\n（注：默认演示文件无实际内容）`);
+                return;
+            }
+
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.href = file.content;
+            link.download = file.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 退出登录
+        function handleLogout() {
+            localStorage.removeItem('currentLoginUser');
+            document.getElementById('drivePage').style.display = "none";
+            document.getElementById('loginPage').style.display = "block";
+            // 清空登录表单
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('errorTip').style.display = "none";
+        }
+
+        // 工具函数：格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return "0 B";
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        // 工具函数：获取文件类型
+        function getFileType(fileName) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) return 'img';
+            if (['mp4', 'avi', 'mov', 'wmv'].includes(ext)) return 'video';
+            if (['mp3', 'wav', 'flac'].includes(ext)) return 'audio';
+            if (['doc', 'docx'].includes(ext)) return 'doc';
+            if (['pdf'].includes(ext)) return 'pdf';
+            if (['txt'].includes(ext)) return 'txt';
+            return 'other';
+        }
+    </script>
+</body>
+</html>

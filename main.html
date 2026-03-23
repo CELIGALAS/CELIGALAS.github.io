@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CELI-GALAS主页面</title>
+    <style>
+        /* 基础样式，保持和之前页面一致的风格 */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* 卡片容器 - 网格布局 */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+        }
+
+        /* 卡片悬浮效果 */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            border-color: #4CAF50;
+        }
+
+        /* 卡片图标/图片区域 */
+        .card-icon {
+            font-size: 48px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        /* 卡片标题 */
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* 卡片描述 */
+        .card-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* 卡片跳转提示 */
+        .card-link {
+            color: #4CAF50;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* 退出按钮样式 */
+        .logout-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logout-btn {
+            padding: 10px 25px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        /* 响应式适配 - 手机端优化 */
+        @media (max-width: 768px) {
+            .card-container {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+    <!-- 引入图标库（可选，增强视觉效果） -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- 页面头部 -->
+<div class="header">
+    <h1>CELI-GALAS网站功能中心</h1>
+    <p>点击下方卡片进入对应功能模块</p>
+</div>
+
+<!-- 卡片容器 -->
+<div class="card-container">
+    <!-- Windows12卡片 - 修改为跳转外网地址 -->
+    <div class="card" onclick="navigateTo('https://science-studio.github.io/win12/desktop.html')">
+        <div class="card-icon">
+            <i class="fas fa-cog"></i>
+        </div>
+        <h3 class="card-title">windows12</h3>
+        <p class="card-desc">抢先免费使用win12</p>
+        <p class="card-link">前往 → windows12</p>
+    </div>
+
+    <!-- 卡片3：系统设置 -->
+    <div class="card" onclick="navigateTo('netdisk.html')">
+        <div class="card-icon">
+            <i class="fas fa-cog"></i>
+        </div>
+        <h3 class="card-title">网盘</h3>
+        <p class="card-desc">你的网盘！</p>
+        <p class="card-link">前往 → 你的网盘</p>
+    </div>
+
+    <div class="card" onclick="navigateTo('AI.html')">
+        <div class="card-icon">
+            <i class="fas fa-cog"></i>
+        </div>
+        <h3 class="card-title">AI人工智能</h3>
+        <p class="card-desc">AI人工智能，直达chatgpt4.0</p>
+        <p class="card-link">前往 → CHATGPT4.0</p>
+    </div>
+
+    <div class="card" onclick="navigateTo('edge.html')">
+        <div class="card-icon">
+            <i class="fas fa-cog"></i>
+        </div>
+        <h3 class="card-title">CELI-GALAS无痕浏览器</h3>
+        <p class="card-desc">100%安全的浏览器</p>
+        <p class="card-link">前往 → CELI-GALAS浏览器</p>
+    </div>
+
+    <div class="card" onclick="navigateTo('html.html')">
+        <div class="card-icon">
+            <i class="fas fa-cog"></i>
+        </div>
+        <h3 class="card-title">CELI-GALAS独家html编译器</h3>
+        <p class="card-desc">html编译器</p>
+        <p class="card-link">前往 → html编译器</p>
+    </div>
+</div>
+<div class="card" onclick="navigateTo('game.html')">
+    <div class="card-icon">
+        <i class="fas fa-cog"></i>
+    </div>
+    <h3 class="card-title">游戏下载</h3>
+    <p class="card-desc">点我下载游戏</p>
+    <p class="card-link">前往 → 游戏列表</p>
+</div>
+</div>
+
+<div class="card" onclick="navigateTo('jiyu.html')">
+    <div class="card-icon">
+        <i class="fas fa-cog"></i>
+    </div>
+    <h3 class="card-title">反极域控制下载</h3>
+    <p class="card-desc">点我下载反极域控制程序</p>
+    <p class="card-link">前往 → 下载</p>
+</div>
+</div>
+
+<!-- 退出登录区域 -->
+<div class="logout-section">
+    <button class="logout-btn" onclick="logout()">退出登录</button>
+</div>
+
+<script>
+    // 页面跳转函数（修改后：直接跳转，无提示）
+    function navigateTo(pageUrl) {
+        // 直接跳转到目标页面
+        window.location.href = pageUrl;
+    }
+
+    // 退出登录函数（保留确认提示，符合退出操作的常规体验）
+    function logout() {
+        if (confirm("确定要退出登录吗？")) {
+            window.location.href = "index.html";
+        }
+    }
+</script>
+</body>
+</html>

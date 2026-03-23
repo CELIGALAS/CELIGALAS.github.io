@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            width: 420px;
+            max-width: 100%;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #f9f9f9;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        /* 按钮样式（核心：绝对生效的动效） */
+        .btn-box {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        /* 登录按钮 */
+        #loginBtn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            /* 动效核心：优先级拉满 */
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+        }
+        #loginBtn:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.4) !important;
+        }
+        #loginBtn:active {
+            transform: translateY(0) !important;
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2) !important;
+        }
+
+        /* 访客按钮 */
+        #guestBtn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            /* 动效核心：优先级拉满 */
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.39, 0.575, 0.565, 1) !important;
+        }
+        #guestBtn:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 18px rgba(40, 167, 69, 0.4) !important;
+        }
+        #guestBtn:active {
+            transform: translateY(0) !important;
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2) !important;
+        }
+
+        /* 滑块验证 */
+        .verify-box {
+            width: 100%;
+            height: 60px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            position: relative;
+            margin: 20px 0 10px;
+            display: none;
+        }
+        .verify-bg {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        .verify-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            line-height: 56px;
+            text-align: center;
+            color: #666;
+            z-index: 1;
+        }
+        .verify-btn {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            height: 100%;
+            background: white;
+            border: none;
+            cursor: pointer;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .verify-icon {
+            width: 20px;
+            height: 20px;
+            border-top: 3px solid #667eea;
+            border-right: 3px solid #667eea;
+            transform: rotate(45deg);
+        }
+
+        /* 提示文字 */
+        .tips {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            height: 20px;
+        }
+        .error-tips {
+            color: #e74c3c;
+            display: none;
+        }
+        .verify-success {
+            color: #10b981;
+        }
+        .verify-fail {
+            color: #ef4444;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>CELI-GALAS用户登录</h2>
+        
+        <div class="form-group">
+            <label for="username">账户：</label>
+            <input type="text" id="username" placeholder="请输入账户">
+        </div>
+        <div class="form-group">
+            <label for="password">密码：</label>
+            <input type="password" id="password" placeholder="请输入密码">
+        </div>
+
+        <!-- 按钮区域（用ID绑定，避免样式冲突） -->
+        <div class="btn-box">
+            <button id="loginBtn" onclick="showVerify('login')">登录</button>
+            <button id="guestBtn" onclick="showVerify('guest')">我是访客</button>
+        </div>
+
+        <!-- 滑块验证区域 -->
+        <div class="verify-box" id="verifyBox">
+            <div class="verify-bg" id="verifyBg"></div>
+            <div class="verify-text">拖动滑块完成安全验证</div>
+            <button class="verify-btn" id="verifyBtn">
+                <div class="verify-icon"></div>
+            </button>
+        </div>
+
+        <!-- 提示文字 -->
+        <div class="tips" id="verifyTips"></div>
+        <div class="error-tips" id="loginError">账户或密码错误，请重新输入！</div>
+        
+        <div class="register-link">
+            <a href="zhuce.html">还没有账号？点击注册</a>
+        </div>
+    </div>
+
+    <script>
+        // 合法账号列表
+        const validUsers = [
+            { username: "1", password: "1" },
+            { username: "czw", password: "czw023" },
+            { username: "Celichenli1", password: "Admin162534#" },
+            { username: "temp1", password: "temp123456" },
+            { username: "temp2", password: "temp123456" },
+            { username: "XS123456", password: "xs123456" },
+            { username: "gita178058", password: "git1780589" },
+            { username: "gaohaochen", password: "576918" },
+            { username: "Stardust", password: "Szh123456" },
+        ];
+
+        // 全局变量：记录验证类型
+        let verifyType = '';
+        // 获取DOM元素
+        const verifyBox = document.getElementById('verifyBox');
+        const verifyBg = document.getElementById('verifyBg');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const verifyTips = document.getElementById('verifyTips');
+        const loginError = document.getElementById('loginError');
+
+        // 显示验证框
+        function showVerify(type) {
+            // 登录类型先验证账号密码
+            if (type === 'login') {
+                const uname = document.getElementById('username').value.trim();
+                const pwd = document.getElementById('password').value.trim();
+                const isValid = validUsers.some(u => u.username === uname && u.password === pwd);
+                
+                if (!isValid) {
+                    loginError.style.display = 'block';
+                    return;
+                }
+                loginError.style.display = 'none';
+            }
+            
+            verifyType = type;
+            verifyBox.style.display = 'block';
+            // 重置验证状态
+            resetVerify();
+        }
+
+        // 重置验证
+        function resetVerify() {
+            verifyBtn.style.left = '0px';
+            verifyBg.style.width = '0px';
+            verifyTips.textContent = '';
+            verifyTips.className = 'tips';
+        }
+
+        // 滑块验证逻辑
+        let isDrag = false;
+        let startX = 0;
+        const boxWidth = verifyBox.offsetWidth;
+        const btnWidth = verifyBtn.offsetWidth;
+
+        // 鼠标按下
+        verifyBtn.addEventListener('mousedown', (e) => {
+            isDrag = true;
+            startX = e.clientX;
+            verifyBtn.style.transition = 'none';
+            verifyBg.style.transition = 'none';
+        });
+
+        // 鼠标移动
+        document.addEventListener('mousemove', (e) => {
+            if (!isDrag) return;
+            const moveX = e.clientX - startX;
+            // 限制拖动范围
+            const finalX = Math.max(0, Math.min(moveX, boxWidth - btnWidth));
+            verifyBtn.style.left = finalX + 'px';
+            verifyBg.style.width = (finalX + btnWidth) + 'px';
+        });
+
+        // 鼠标松开
+        document.addEventListener('mouseup', () => {
+            if (!isDrag) return;
+            isDrag = false;
+
+            const currentX = parseInt(verifyBtn.style.left) || 0;
+            // 验证通过（拖动到95%以上）
+            if (currentX >= boxWidth - btnWidth - 10) {
+                // 验证成功
+                verifyBtn.style.left = (boxWidth - btnWidth) + 'px';
+                verifyBg.style.width = boxWidth + 'px';
+                verifyTips.textContent = '验证成功，正在跳转...';
+                verifyTips.className = 'tips verify-success';
+                
+                // 1秒后跳转
+                setTimeout(() => {
+                    window.location.href = 'mianze.html';
+                }, 1000);
+            } else {
+                // 验证失败
+                verifyBtn.style.transition = 'left 0.3s ease';
+                verifyBg.style.transition = 'width 0.3s ease';
+                verifyBtn.style.left = '0px';
+                verifyBg.style.width = '0px';
+                verifyTips.textContent = '验证失败，请重新拖动';
+                verifyTips.className = 'tips verify-fail';
+            }
+        });
+
+        // 防止选中文字
+        verifyBox.addEventListener('selectstart', (e) => e.preventDefault());
+    </script>
+</body>
+</html>

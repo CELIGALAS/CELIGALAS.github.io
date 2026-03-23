@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册提示 - 共享账户</title>
+    <!-- 引入Tailwind CSS用于快速样式设计 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- 自定义配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // 主色调（蓝紫色）
+                        secondary: '#6B7280', // 次要色调
+                        accent: '#F59E0B', // 强调色（橙色）
+                        light: '#F9FAFB', // 浅色背景
+                        dark: '#1F2937' // 深色文字
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 自定义工具类 */
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            }
+            .btn-hover {
+                transition: all 0.3s ease;
+            }
+            .btn-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-light to-gray-100 min-h-screen flex flex-col items-center justify-start p-4 md:p-8">
+    <!-- 页面容器 -->
+    <div class="w-full max-w-4xl mx-auto">
+        <!-- 标题区域 -->
+        <div class="text-center mb-8 mt-6">
+            <h1 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-dark mb-2">注册提示</h1>
+            <p class="text-secondary text-lg">抱歉，暂未开通线上自助注册功能</p>
+        </div>
+
+        <!-- 说明区域 -->
+        <div class="bg-white rounded-xl p-6 mb-8 card-shadow">
+            <div class="flex items-start gap-4">
+                <i class="fa-solid fa-circle-info text-primary text-2xl mt-1"></i>
+                <div>
+                    <h2 class="text-xl font-semibold text-dark mb-2">注册方式说明</h2>
+                    <p class="text-secondary leading-relaxed">
+                        目前本网站暂未开放自助注册通道，你可以选择：<br>
+                        1. 联系管理员（陈修同）进行<span class="text-accent font-medium">人工注册</span>（推荐）<br>
+                        2. 使用下方提供的<span class="text-accent font-medium">共享测试账户</span>临时使用
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 共享账户卡片区域 -->
+        <div class="mb-10">
+            <h2 class="text-xl font-semibold text-dark mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-users text-primary"></i>
+                共享账户列表
+            </h2>
+            
+            <!-- 账户卡片容器 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- 账户卡片1 -->
+                <div class="bg-white rounded-xl p-5 card-shadow card-hover border-l-4 border-primary">
+                    <div class="font-medium text-dark mb-1">账户名称</div>
+                    <div class="text-lg font-semibold mb-4">1</div>
+                    
+                    <div class="font-medium text-dark mb-1">登录密码</div>
+                    <div class="text-lg font-semibold text-accent mb-4">1</div>
+                    
+                    <div class="text-xs text-secondary mt-2 pt-2 border-t border-gray-100">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> 测试专用账户，请勿修改密码
+                    </div>
+                </div>
+
+                <!-- 账户卡片2 -->
+                <div class="bg-white rounded-xl p-5 card-shadow card-hover border-l-4 border-primary">
+                    <div class="font-medium text-dark mb-1">账户名称</div>
+                    <div class="text-lg font-semibold mb-4">temp1</div>
+                    
+                    <div class="font-medium text-dark mb-1">登录密码</div>
+                    <div class="text-lg font-semibold text-accent mb-4">temp123456</div>
+                    
+                    <div class="text-xs text-secondary mt-2 pt-2 border-t border-gray-100">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> 测试专用账户，请勿修改密码
+                    </div>
+                </div>
+
+                <!-- 账户卡片3 -->
+                <div class="bg-white rounded-xl p-5 card-shadow card-hover border-l-4 border-primary">
+                    <div class="font-medium text-dark mb-1">账户名称</div>
+                    <div class="text-lg font-semibold mb-4">temp2</div>
+                    
+                    <div class="font-medium text-dark mb-1">登录密码</div>
+                    <div class="text-lg font-semibold text-accent mb-4">temp123456</div>
+                    
+                    <div class="text-xs text-secondary mt-2 pt-2 border-t border-gray-100">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> 测试专用账户，请勿修改密码
+                    </div>
+                </div>
+
+                <!-- 可自定义添加更多账户卡片 -->
+                <!-- 
+                <div class="bg-white rounded-xl p-5 card-shadow card-hover border-l-4 border-primary">
+                    <div class="font-medium text-dark mb-1">账户名称</div>
+                    <div class="text-lg font-semibold mb-4">test_user04</div>
+                    
+                    <div class="font-medium text-dark mb-1">登录密码</div>
+                    <div class="text-lg font-semibold text-accent mb-4">Test@456789</div>
+                    
+                    <div class="text-xs text-secondary mt-2 pt-2 border-t border-gray-100">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> 测试专用账户，请勿修改密码
+                    </div>
+                </div>
+                -->
+            </div>
+        </div>
+
+        <!-- 返回按钮区域 -->
+        <div class="text-center mb-12">
+            <a href="index.html" class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-lg font-medium btn-hover">
+                <i class="fa-solid fa-arrow-left"></i>
+                返回首页
+            </a>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="mt-auto py-4 text-center text-secondary text-sm w-full">
+        <p>© 2025 系统管理中心 - 共享账户仅作测试使用</p>
+    </footer>
+
+    <!-- 简单的交互效果脚本 -->
+    <script>
+        // 为卡片添加轻微的点击反馈
+        document.querySelectorAll('.card-hover').forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.add('scale-98');
+                setTimeout(() => {
+                    card.classList.remove('scale-98');
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

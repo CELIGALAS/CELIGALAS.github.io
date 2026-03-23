@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>高端资源下载中心</title>
+  <style>
+    /* 基础重置与全局样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+    }
+
+    :root {
+      --primary: #4361ee;
+      --primary-light: #5874f5;
+      --primary-dark: #3a56d4;
+      --bg-light: #f8f9ff;
+      --text-primary: #2d3748;
+      --text-secondary: #718096;
+      --text-tertiary: #a0aec0;
+      --white: #ffffff;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      background-color: var(--bg-light);
+      min-height: 100vh;
+      padding: 60px 20px;
+      background-image:
+              radial-gradient(circle at 10% 20%, rgba(67, 97, 238, 0.05) 0%, transparent 20%),
+              radial-gradient(circle at 90% 80%, rgba(67, 97, 238, 0.05) 0%, transparent 20%);
+    }
+
+    /* 页面容器 */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* 页面标题 */
+    .page-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .page-title {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* 卡片网格布局 */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 32px;
+    }
+
+    /* 下载卡片核心样式 */
+    .download-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(67, 97, 238, 0.08);
+    }
+
+    /* 卡片装饰元素 */
+    .download-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      opacity: 0;
+      transform: scaleX(0);
+      transition: var(--transition);
+      transform-origin: left;
+    }
+
+    .download-card::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(67, 97, 238, 0.03) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+      transition: var(--transition);
+      transform: translate(20%, -20%);
+    }
+
+    /* 卡片悬浮效果 */
+    .download-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .download-card:hover::before {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    .download-card:hover::after {
+      transform: translate(10%, -10%);
+    }
+
+    /* 卡片内容区域 */
+    .card-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 卡片图标 */
+    .card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 16px rgba(67, 97, 238, 0.2);
+    }
+
+    .card-icon i {
+      font-size: 28px;
+      color: var(--white);
+    }
+
+    /* 卡片标题 */
+    .card-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+
+    /* 卡片描述 */
+    .card-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* 卡片底部信息栏 */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid rgba(160, 174, 192, 0.15);
+    }
+
+    /* 文件信息 */
+    .file-info {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 下载按钮样式 */
+    .download-btn {
+      padding: 8px 16px;
+      background: var(--primary);
+      color: var(--white);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .download-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
+    }
+
+    /* 响应式适配 */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 28px;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .download-card {
+        padding: 28px 24px;
+      }
+
+      .card-icon {
+        width: 56px;
+        height: 56px;
+      }
+    }
+  </style>
+  <!-- 引入图标库 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- 引入谷歌字体（增强排版） -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <!-- 页面标题区域 -->
+  <div class="page-header">
+    <h1 class="page-title">资源下载中心</h1>
+    <p class="page-subtitle">精心整理的开发资源，点击卡片或下载按钮即可获取，安全可靠</p>
+  </div>
+
+  <!-- 卡片网格 -->
+  <div class="card-grid">
+    <!-- 卡片1：pcl2我的世界 -->
+    <div class="download-card" onclick="downloadFile(1)">
+      <div class="card-content">
+        <div class="card-icon">
+          <i class="bi bi-file-text"></i>
+        </div>
+        <h3 class="card-title">pcl2我的世界</h3>
+        <p class="card-desc">最新版免费pcl2我的世界</p>
+        <div class="card-footer">
+          <div class="file-info">
+            <i class="bi bi-filetype-pdf"></i>
+            <span>PDF · 4.8MB</span>
+          </div>
+          <button class="download-btn" onclick="event.stopPropagation(); downloadFile(1)">
+            <i class="bi bi-download"></i>
+            下载
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增卡片2：战地.rar -->
+    <div class="download-card" onclick="downloadFile(2)">
+      <div class="card-content">
+        <div class="card-icon">
+          <i class="bi bi-file-zip-fill"></i>
+        </div>
+        <h3 class="card-title">战地模拟器</h3>
+        <p class="card-desc">战地游戏相关资源包，解压即可使用</p>
+        <div class="card-footer">
+          <div class="file-info">
+            <i class="bi bi-filetype-rar"></i>
+            <span>RAR · 按需修改大小</span>
+          </div>
+          <button class="download-btn" onclick="event.stopPropagation(); downloadFile(2)">
+            <i class="bi bi-download"></i>
+            下载
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 下载链接配置（按ID映射）
+  const downloadLinks = {
+    1: "Plain Craft Launcher 2.exe",
+    2: "战地.rar" // 当前文件夹中的战地.rar文件
+  };
+
+  /**
+   * 文件下载核心函数
+   * @param {number} fileId - 文件ID（对应downloadLinks中的序号）
+   */
+  function downloadFile(fileId) {
+    // 验证链接是否存在
+    if (!downloadLinks[fileId]) {
+      alert("❌ 下载链接不存在，请检查配置！");
+      return;
+    }
+
+    try {
+      // 创建下载链接元素
+      const link = document.createElement("a");
+      link.href = downloadLinks[fileId];
+      link.download = downloadLinks[fileId].split('/').pop(); // 自动提取文件名
+      link.target = "_blank";
+
+      // 触发下载
+      document.body.appendChild(link);
+      link.click();
+
+      // 清理DOM元素
+      setTimeout(() => link.remove(), 200);
+
+      // 友好的下载提示
+      const cardTitle = document.querySelector(`.download-card[onclick="downloadFile(${fileId})"] .card-title`).textContent;
+      alert(`✅ 开始下载：${cardTitle}\n📌 请等待下载弹窗弹出`);
+    } catch (error) {
+      alert(`❌ 下载失败：${error.message}\n💡 请检查网络或文件是否存在`);
+      console.error("下载错误：", error);
+    }
+  }
+</script>
+</body>
+</html>

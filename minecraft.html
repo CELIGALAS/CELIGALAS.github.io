@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML 简易我的世界</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    body { overflow: hidden; background: #87CEEB; }
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      pointer-events: none; /* 不阻挡鼠标事件 */
+    }
+    #info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-family: Arial;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+  <!-- 引入 Three.js 库 -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/PointerLockControls.js"></script>
+</head>
+<body>
+<!-- 十字准星 -->
+<div id="crosshair">
+  <svg width="20" height="20" viewBox="0 0 20 20">
+    <line x1="10" y1="0" x2="10" y2="20" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="10" x2="20" y2="10" stroke="white" stroke-width="1"/>
+  </svg>
+</div>
+<!-- 操作提示 -->
+<div id="info">
+  WASD：移动 | 空格：跳跃 | 鼠标：视角<br>
+  左键：放置方块 | 右键：拆除方块 | ESC：退出视角锁定
+</div>
+
+<script>
+  // ===================== 核心变量 =====================
+  let scene, camera, renderer, controls;
+  let blocks = []; // 存储所有方块
+  const BLOCK_SIZE = 1; // 方块尺寸
+  const TERRAIN_SIZE = 15; // 地形大小
+  const TERRAIN_HEIGHT = 4; // 地形基础高度
+  const RAYCAST_DISTANCE = 5; // 射线检测距离
+
+  // 玩家参数
+  const player = {
+    position: new THREE.Vector3(0, TERRAIN_HEIGHT + 2, 0),
+    velocity: new THREE.Vector3(0, 0, 0),
+    speed: 5,
+    jumpPower: 8,
+    gravity: 0.2,
+    grounded: false
+  };
+
+  // 按键状态
+  const keys = {
+    w: false, a: false, s: false, d: false, space: false
+  };
+
+  // ===================== 初始化场景 =====================
+  function init() {
+    // 1. 创建场景
+    scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x87CEEB, 20, 50); // 雾化效果
+
+    // 2. 创建相机（透视相机）
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.copy(player.position);
+
+    // 3. 创建渲染器
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x87CEEB); // 天空蓝背景
+    document.body.appendChild(renderer.domElement);
+
+    // 4. 第一人称控制器（锁定鼠标视角）
+    controls = new THREE.PointerLockControls(camera, document.body);
+    document.addEventListener('click', () => controls.lock());
+
+    // 5. 创建光源
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(10, 20, 10);
+    scene.add(directionalLight);
+
+    // 6. 生成地形
+    generateTerrain();
+
+    // 7. 监听事件
+    window.addEventListener('resize', onWindowResize);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    document.addEventListener('mousedown', onMouseDown);
+  }
+
+  // ===================== 地形生成 =====================
+  function generateTerrain() {
+    // 草方块材质
+    const grassMaterial = new THREE.MeshLambertMaterial({ color: 0x4a7c59 });
+    // 石头方块材质
+    const stoneMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+
+    for (let x = -TERRAIN_SIZE / 2; x < TERRAIN_SIZE / 2; x++) {
+      for (let z = -TERRAIN_SIZE / 2; z < TERRAIN_SIZE / 2; z++) {
+        // 随机地形高度
+        const height = TERRAIN_HEIGHT + Math.floor(Math.random() * 3 - 1);
+        for (let y = 0; y < height; y++) {
+          // 创建方块几何体
+          const geometry = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+          const mesh = new THREE.Mesh(
+                  geometry,
+                  y < height - 1 ? stoneMaterial : grassMaterial
+          );
+          // 设置方块位置
+          mesh.position.set(x, y, z);
+          mesh.userData = { type: y < height - 1 ? 'stone' : 'grass' };
+          scene.add(mesh);
+          blocks.push(mesh);
+        }
+      }
+    }
+  }
+
+  // ===================== 玩家移动逻辑 =====================
+  function updatePlayer() {
+    if (controls.isLocked) {
+      // 重置水平速度
+      player.velocity.x = 0;
+      player.velocity.z = 0;
+
+      // 移动方向
+      if (keys.w) player.velocity.z = -player.speed;
+      if (keys.s) player.velocity.z = player.speed;
+      if (keys.a) player.velocity.x = -player.speed;
+      if (keys.d) player.velocity.x = player.speed;
+
+      // 转向（基于相机视角）
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+      forward.y = 0;
+      right.y = 0;
+      forward.normalize();
+      right.normalize();
+
+      // 计算最终移动方向
+      const moveDir = new THREE.Vector3();
+      moveDir.add(forward.multiplyScalar(player.velocity.z));
+      moveDir.add(right.multiplyScalar(player.velocity.x));
+
+      // 重力和跳跃
+      player.velocity.y -= player.gravity;
+      if (keys.space && player.grounded) {
+        player.velocity.y = player.jumpPower;
+        player.grounded = false;
+      }
+
+      // 碰撞检测（简化版）
+      const nextPos = camera.position.clone().add(moveDir.multiplyScalar(0.01)).add(player.velocity.clone().multiplyScalar(0.01));
+      const isColliding = checkCollision(nextPos);
+
+      if (!isColliding) {
+        camera.position.add(moveDir.multiplyScalar(0.01));
+        camera.position.y += player.velocity.y * 0.01;
+      } else {
+        // 落地检测
+        if (player.velocity.y < 0) {
+          player.velocity.y = 0;
+          player.grounded = true;
+        }
+      }
+
+      // 限制玩家高度（防止飞天）
+      if (camera.position.y < 0) camera.position.y = 0;
+    }
+  }
+
+  // ===================== 碰撞检测 =====================
+  function checkCollision(pos) {
+    for (const block of blocks) {
+      const dist = block.position.distanceTo(pos);
+      if (dist < BLOCK_SIZE) return true;
+    }
+    return false;
+  }
+
+  // ===================== 射线检测（放置/拆除方块） =====================
+  function raycast() {
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+    const intersects = raycaster.intersectObjects(blocks);
+    return intersects.length > 0 && intersects[0].distance < RAYCAST_DISTANCE ? intersects[0] : null;
+  }
+
+  // ===================== 鼠标事件（放置/拆除方块） =====================
+  function onMouseDown(event) {
+    if (!controls.isLocked) return;
+
+    const intersect = raycast();
+    if (!intersect) return;
+
+    // 左键：放置方块
+    if (event.button === 0) {
+      const grassMaterial = new THREE.MeshLambertMaterial({ color: 0x4a7c59 });
+      const geometry = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+      const mesh = new THREE.Mesh(geometry, grassMaterial);
+      // 在碰撞面的外侧生成方块
+      mesh.position.copy(intersect.point).add(intersect.face.normal.multiplyScalar(BLOCK_SIZE / 2));
+      // 对齐到网格
+      mesh.position.x = Math.round(mesh.position.x);
+      mesh.position.y = Math.round(mesh.position.y);
+      mesh.position.z = Math.round(mesh.position.z);
+      mesh.userData = { type: 'grass' };
+      scene.add(mesh);
+      blocks.push(mesh);
+    }
+
+    // 右键：拆除方块
+    if (event.button === 2) {
+      scene.remove(intersect.object);
+      blocks = blocks.filter(b => b !== intersect.object);
+    }
+  }
+
+  // ===================== 事件监听 =====================
+  function onKeyDown(event) {
+    switch (event.code) {
+      case 'KeyW': keys.w = true; break;
+      case 'KeyA': keys.a = true; break;
+      case 'KeyS': keys.s = true; break;
+      case 'KeyD': keys.d = true; break;
+      case 'Space': keys.space = true; break;
+      case 'Escape': controls.unlock(); break;
+    }
+  }
+
+  function onKeyUp(event) {
+    switch (event.code) {
+      case 'KeyW': keys.w = false; break;
+      case 'KeyA': keys.a = false; break;
+      case 'KeyS': keys.s = false; break;
+      case 'KeyD': keys.d = false; break;
+      case 'Space': keys.space = false; break;
+    }
+  }
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  // ===================== 动画循环 =====================
+  function animate() {
+    requestAnimationFrame(animate);
+    updatePlayer();
+    renderer.render(scene, camera);
+  }
+
+  // ===================== 启动游戏 =====================
+  init();
+  animate();
+</script>
+</body>
+</html>
