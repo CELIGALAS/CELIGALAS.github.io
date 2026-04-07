@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 人工智能</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #667eea);
+            background-size: 300% 100%;
+            animation: gradientMove 4s linear infinite;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        .header h1 {
+            color: #1a1a2e;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .header h1 svg {
+            width: 28px;
+            height: 28px;
+            fill: #667eea;
+        }
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        .chat-history {
+            height: 500px;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f7fafc;
+        }
+        .chat-history::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-history::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        .chat-history::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+        .message {
+            margin: 12px 0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.6;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .ai-message {
+            background: white;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+        .ai-message.error {
+            background: #fff5f5;
+            border-color: #feb2b2;
+            color: #e53e3e;
+        }
+        .thinking {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .thinking::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border: 2px solid #667eea;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .input-area {
+            display: flex;
+            gap: 12px;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+        #message-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        #message-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        #send-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        #send-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        @media (max-width: 768px) {
+            .message {
+                max-width: 90%;
+            }
+            .chat-history {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="main.html" class="back-btn">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        返回主页
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>
+                <svg viewBox="0 0 24 24"><path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z"/></svg>
+                AI 人工智能
+            </h1>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-history" id="chat-history">
+                <div class="message ai-message">你好！我是 AI 助手，有什么可以帮助你的吗？</div>
+            </div>
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="请输入问题..." />
+                <button id="send-btn">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEEPSEEK_API_KEY = "sk-09913eef584c4a338c46c71b60b229b3";
+        const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
+        const MODEL_NAME = "deepseek-chat";
+
+        const chatHistoryEl = document.getElementById("chat-history");
+        const messageInputEl = document.getElementById("message-input");
+        const sendBtnEl = document.getElementById("send-btn");
+
+        let conversationHistory = [];
+
+        async function sendMessageToDeepSeek(userMessage) {
+            sendBtnEl.disabled = true;
+            sendBtnEl.textContent = "发送中...";
+
+            addMessageToHistory("user", userMessage);
+            messageInputEl.value = "";
+
+            conversationHistory.push({ role: "user", content: userMessage });
+
+            const thinkingEl = document.createElement("div");
+            thinkingEl.className = "message ai-message thinking";
+            thinkingEl.textContent = "思考中...";
+            chatHistoryEl.appendChild(thinkingEl);
+            chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+
+            try {
+                const requestBody = {
+                    model: MODEL_NAME,
+                    messages: conversationHistory,
+                    temperature: 0.7,
+                    max_tokens: 2048
+                };
+
+                const response = await fetch(DEEPSEEK_API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 请求失败：${response.status}`);
+                }
+
+                const result = await response.json();
+                let aiReply = result.choices[0]?.message?.content || "未获取到回复";
+                
+                if (aiReply.includes("DeepSeek")) {
+                    aiReply = aiReply.replace(/DeepSeek/g, "CELI-CHAT-2.0");
+                }
+                if (aiReply.includes("深度求索公司")) {
+                    aiReply = aiReply.replace(/深度求索公司/g, "CELI-GALAS-STUDIOS");
+                }
+                
+                thinkingEl.remove();
+                conversationHistory.push({ role: "assistant", content: aiReply });
+                addMessageToHistory("ai", aiReply);
+
+            } catch (error) {
+                thinkingEl.remove();
+                addMessageToHistory("ai", `请求出错：${error.message}`, true);
+                console.error("DeepSeek API 错误：", error);
+            } finally {
+                sendBtnEl.disabled = false;
+                sendBtnEl.textContent = "发送";
+            }
+        }
+
+        function addMessageToHistory(role, content, isError = false) {
+            const messageEl = document.createElement("div");
+            messageEl.className = `message ${role}-message${isError ? ' error' : ''}`;
+            messageEl.textContent = content;
+            chatHistoryEl.appendChild(messageEl);
+            chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+        }
+
+        sendBtnEl.addEventListener("click", () => {
+            const message = messageInputEl.value.trim();
+            if (message) {
+                sendMessageToDeepSeek(message);
+            }
+        });
+
+        messageInputEl.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && messageInputEl.value.trim()) {
+                sendMessageToDeepSeek(messageInputEl.value.trim());
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML 查看器</title>
+    <style>
+        :root {
+            /* 深色主题变量 - 极简高级风 */
+            --editor-bg: #1e1e1e;       /* 编辑器背景 */
+            --preview-bg: #ffffff;      /* 预览区背景 */
+            --primary: #007acc;         /* 主色调（VS Code蓝） */
+            --secondary: #2d2d2d;       /* 次要背景色 */
+            --text-primary: #e0e0e0;    /* 主要文字色 */
+            --text-secondary: #9e9e9e;  /* 次要文字色 */
+            --success: #00c853;         /* 成功色 */
+            --danger: #ff5252;          /* 危险色 */
+            --border: #333333;          /* 边框色 */
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            --radius: 6px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        /* 页面容器 */
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* 头部 */
+        .app-header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-header h1 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .app-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 控制栏 */
+        .control-bar {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0 0.25rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .btn-run {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-run:hover {
+            background-color: #00b248;
+        }
+
+        .btn-clear {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background-color: #ff1744;
+        }
+
+        /* 主内容区 - 双栏布局 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            height: calc(100vh - 160px);
+        }
+
+        /* 编辑器/预览器容器 */
+        .panel {
+            background-color: var(--secondary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 面板标题 */
+        .panel-header {
+            padding: 0.75rem 1rem;
+            background-color: var(--editor-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .panel-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        /* HTML编辑器 */
+        #html-editor {
+            flex: 1;
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            outline: none;
+            resize: none;
+            background-color: var(--editor-bg);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            /* 滚动条美化 */
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--secondary);
+        }
+
+        #html-editor::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        #html-editor::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+
+        #html-editor::-webkit-scrollbar-track {
+            background-color: var(--secondary);
+        }
+
+        /* 预览区iframe */
+        #preview-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background-color: var(--preview-bg);
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+                gap: 1rem;
+            }
+
+            .panel {
+                height: 400px;
+            }
+
+            .app-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 头部 -->
+        <div class="app-header">
+            <h1>HTML 实时查看器</h1>
+            <p>极简版 | 输入代码 · 即时预览</p>
+        </div>
+
+        <!-- 控制栏 -->
+        <div class="control-bar">
+            <button class="btn btn-run" id="run-btn">
+                <span>▶</span> 运行 HTML
+            </button>
+            <button class="btn btn-clear" id="clear-btn">
+                <span>✕</span> 清空内容
+            </button>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- HTML编辑器面板 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-icon">&lt;/&gt;</div>
+                    <span>HTML 编辑区</span>
+                </div>
+                <textarea id="html-editor" placeholder="请输入HTML代码...">
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;预览示例&lt;/title&gt;
+    &lt;style&gt;
+        body {
+            font-family: -apple-system, sans-serif;
+            text-align: center;
+            margin-top: 80px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #007acc;
+            font-weight: 500;
+        }
+        p {
+            color: #666;
+            margin-top: 20px;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;极简 HTML 查看器&lt;/h1&gt;
+    &lt;p&gt;输入代码，点击运行即可实时预览 ✨&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+                </textarea>
+            </div>
+
+            <!-- 预览面板 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-icon">👁️</div>
+                    <span>预览区</span>
+                </div>
+                <iframe id="preview-frame"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const htmlEditor = document.getElementById('html-editor');
+        const previewFrame = document.getElementById('preview-frame');
+        const runBtn = document.getElementById('run-btn');
+        const clearBtn = document.getElementById('clear-btn');
+
+        // 核心：渲染HTML到预览区
+        function renderHtml() {
+            try {
+                const htmlCode = htmlEditor.value.trim();
+                const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+
+                previewDoc.open();
+                previewDoc.write(htmlCode || '<div style="text-align:center; padding:50px; color:#999;">暂无预览内容</div>');
+                previewDoc.close();
+            } catch (error) {
+                alert(`解析错误：${error.message}`);
+            }
+        }
+
+        // 清空内容
+        function clearContent() {
+            if (confirm('确定清空所有内容吗？')) {
+                htmlEditor.value = '';
+                renderHtml(); // 同步清空预览区
+            }
+        }
+
+        // 绑定事件
+        runBtn.addEventListener('click', renderHtml);
+        clearBtn.addEventListener('click', clearContent);
+
+        // 页面加载自动渲染初始代码
+        window.addEventListener('load', renderHtml);
+
+        // 快捷键：Ctrl+Enter 运行
+        htmlEditor.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                renderHtml();
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
